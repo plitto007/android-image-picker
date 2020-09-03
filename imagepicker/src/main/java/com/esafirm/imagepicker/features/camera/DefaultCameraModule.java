@@ -21,14 +21,14 @@ import androidx.core.content.FileProvider;
 public class DefaultCameraModule implements CameraModule, Serializable {
 
     private String currentImagePath;
-
-    public Intent getCameraIntent(Context context) {
-        return getCameraIntent(context, ImagePickerConfigFactory.createDefault(context));
-    }
+//
+//    public Intent getCameraIntent(Context context) {
+//        return getCameraIntent(context, ImagePickerConfigFactory.createDefault(context));
+//    }
 
     @Override
-    public Intent getCameraIntent(Context context, BaseConfig config) {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    public Intent getCameraIntent(Context context, BaseConfig config, boolean isPhoto) {
+        Intent intent = new Intent(isPhoto ? MediaStore.ACTION_IMAGE_CAPTURE : MediaStore.ACTION_VIDEO_CAPTURE);
         File imageFile = ImagePickerUtils.createImageFile(config.getImageDirectory());
         if (imageFile != null) {
             Context appContext = context.getApplicationContext();

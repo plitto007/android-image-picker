@@ -6,7 +6,7 @@ import android.content.Intent;
 import com.esafirm.imagepicker.features.common.BaseConfig;
 
 public interface CameraModule {
-    Intent getCameraIntent(Context context, BaseConfig config);
+    Intent getCameraIntent(Context context, BaseConfig config, boolean isPhoto);
     void getImage(Context context, Intent intent, OnImageReadyListener imageReadyListener);
     void removeImage();
 }

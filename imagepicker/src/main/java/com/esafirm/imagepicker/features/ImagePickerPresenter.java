@@ -101,9 +101,9 @@ class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         }
     }
 
-    void captureImage(Fragment fragment, BaseConfig config, int requestCode) {
+    void captureImage(Fragment fragment, BaseConfig config, int requestCode, boolean isPhoto) {
         Context context = fragment.getActivity().getApplicationContext();
-        Intent intent = getCameraModule().getCameraIntent(fragment.getActivity(), config);
+        Intent intent = getCameraModule().getCameraIntent(fragment.getActivity(), config, isPhoto);
         if (intent == null) {
             Toast.makeText(context, context.getString(R.string.ef_error_create_image_file), Toast.LENGTH_LONG).show();
             return;

@@ -58,6 +58,7 @@ public class ImagePickerFragment extends Fragment implements ImagePickerView {
 
     private static final int RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 23;
     private static final int RC_PERMISSION_REQUEST_CAMERA = 24;
+    private static final int RC_PERMISSION_REQUEST_VIDEO_CAMERA = 25;
 
     private IpLogger logger = IpLogger.getInstance();
 
@@ -115,7 +116,7 @@ public class ImagePickerFragment extends Fragment implements ImagePickerView {
 
         if (isCameraOnly) {
             if (savedInstanceState == null) {
-                captureImageWithPermission();
+                captureImageWithPermission(true);
             }
         } else {
             ImagePickerConfig config = getImagePickerConfig();
@@ -311,7 +312,7 @@ public class ImagePickerFragment extends Fragment implements ImagePickerView {
         }
     }
 
-    private void requestCameraPermissions() {
+    private void requestCameraPermissions(boolean isPhoto) {
         logger.w("Write External permission is not granted. Requesting permission");
 
         ArrayList<String> permissions = new ArrayList<>(2);
@@ -324,12 +325,12 @@ public class ImagePickerFragment extends Fragment implements ImagePickerView {
         }
 
         if (checkForRationale(permissions)) {
-            requestPermissions(permissions.toArray(new String[permissions.size()]), RC_PERMISSION_REQUEST_CAMERA);
+            requestPermissions(permissions.toArray(new String[permissions.size()]), isPhoto? RC_PERMISSION_REQUEST_CAMERA: RC_PERMISSION_REQUEST_VIDEO_CAMERA);
         } else {
             final String permission = ImagePickerPreferences.PREF_CAMERA_REQUESTED;
             if (!preferences.isPermissionRequested(permission)) {
                 preferences.setPermissionRequested(permission);
-                requestPermissions(permissions.toArray(new String[permissions.size()]), RC_PERMISSION_REQUEST_CAMERA);
+                requestPermissions(permissions.toArray(new String[permissions.size()]), isPhoto? RC_PERMISSION_REQUEST_CAMERA: RC_PERMISSION_REQUEST_VIDEO_CAMERA);
             } else {
                 if (isCameraOnly) {
                     Toast.makeText(getActivity().getApplicationContext(),
@@ -371,7 +372,19 @@ public class ImagePickerFragment extends Fragment implements ImagePickerView {
             case RC_PERMISSION_REQUEST_CAMERA: {
                 if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     logger.d("Camera permission granted");
-                    captureImage();
+                    captureImage(true);
+                    return;
+                }
+                logger.e("Permission not granted: results len = " + grantResults.length +
+                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+                interactionListener.cancel();
+                break;
+            }
+
+            case RC_PERMISSION_REQUEST_VIDEO_CAMERA: {
+                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    logger.d("Camera permission granted");
+                    captureImage(false);
                     return;
                 }
                 logger.e("Permission not granted: results len = " + grantResults.length +
@@ -417,32 +430,33 @@ public class ImagePickerFragment extends Fragment implements ImagePickerView {
     /**
      * Request for camera permission
      */
-    public void captureImageWithPermission() {
+    public void captureImageWithPermission(boolean isPhoto) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             final boolean isCameraGranted = ActivityCompat
                     .checkSelfPermission(getActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
             final boolean isWriteGranted = ActivityCompat
                     .checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
             if (isCameraGranted && isWriteGranted) {
-                captureImage();
+                captureImage(isPhoto);
             } else {
                 logger.w("Camera permission is not granted. Requesting permission");
-                requestCameraPermissions();
+                requestCameraPermissions(isPhoto);
             }
         } else {
-            captureImage();
+            captureImage(isPhoto);
         }
     }
+
 
     /**
      * Start camera intent
      * Create a temporary file and pass file Uri to camera intent
      */
-    private void captureImage() {
+    private void captureImage(boolean isPhoto) {
         if (!CameraHelper.checkCameraAvailability(getActivity())) {
             return;
         }
-        presenter.captureImage(this, getBaseConfig(), RC_CAPTURE);
+        presenter.captureImage(this, getBaseConfig(), RC_CAPTURE, isPhoto);
     }
 
     private void startContentObserver() {
