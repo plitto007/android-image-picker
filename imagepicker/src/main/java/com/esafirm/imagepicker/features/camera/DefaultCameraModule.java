@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.esafirm.imagepicker.features.ImagePickerConfigFactory;
 import com.esafirm.imagepicker.features.common.BaseConfig;
@@ -20,6 +21,7 @@ import androidx.core.content.FileProvider;
 
 public class DefaultCameraModule implements CameraModule, Serializable {
 
+    private static final String TAG = "DefaultCameraModule";
     private String currentImagePath;
 //
 //    public Intent getCameraIntent(Context context) {
@@ -29,7 +31,9 @@ public class DefaultCameraModule implements CameraModule, Serializable {
     @Override
     public Intent getCameraIntent(Context context, BaseConfig config, boolean isPhoto) {
         Intent intent = new Intent(isPhoto ? MediaStore.ACTION_IMAGE_CAPTURE : MediaStore.ACTION_VIDEO_CAPTURE);
-        File imageFile = ImagePickerUtils.createImageFile(config.getImageDirectory());
+        File imageFile = ImagePickerUtils.createImageFile(config.getImageDirectory(), isPhoto);
+        Log.d(TAG,"directory: "+config.getImageDirectory().getPath());
+        Log.d(TAG,"imageFile: "+imageFile.getAbsolutePath());
         if (imageFile != null) {
             Context appContext = context.getApplicationContext();
             String providerName = String.format(Locale.ENGLISH, "%s%s", appContext.getPackageName(), ".imagepicker.provider");

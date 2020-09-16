@@ -27,7 +27,7 @@ public class ImagePickerUtils {
         return str == null || str.length() == 0;
     }
 
-    public static File createImageFile(ImagePickerSavePath savePath) {
+    public static File createImageFile(ImagePickerSavePath savePath, boolean isPhoto) {
         // External sdcard location
         final String path = savePath.getPath();
         File mediaStorageDir = savePath.isFullPath()
@@ -44,11 +44,11 @@ public class ImagePickerUtils {
 
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.getDefault()).format(new Date());
-        File result = new File(mediaStorageDir, "IMG_" + timeStamp + ".jpg");
+        File result = new File(mediaStorageDir, "IMG_" + timeStamp + (isPhoto? ".jpg": ".mp4"));
         int counter = 0;
         while (result.exists()) {
             counter++;
-            result = new File(mediaStorageDir, "IMG_" + timeStamp + "(" + counter + ").jpg");
+            result = new File(mediaStorageDir, "IMG_" + timeStamp + "(" + counter + ")"+(isPhoto? ".jpg": ".mp4"));
         }
         return result;
     }
